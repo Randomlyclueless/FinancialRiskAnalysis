@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Expense Tracker</title>
+</head>
+<body>
+  <h2>Speak Your Expense</h2>
+  <button onclick="startDictation()">🎤 Speak</button><br><br>
+  <input type="text" id="textBox" placeholder="Your speech appears here" size="50" />
+
+  <script>
+    function startDictation() {
+      const recognition = new webkitSpeechRecognition(); // Chrome only
+      recognition.lang = "en-IN"; // Indian English
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("textBox").value = transcript;
+      };
+      recognition.onerror = function(e) {
+        alert("Error: " + e.error);
+      };
+      recognition.start();
+    }
+  </script>
+</body>
+</html>

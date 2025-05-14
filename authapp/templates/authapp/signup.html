@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Signup</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: url('/static/authapp/image2.jpg');
+      background-size: cover;
+      background-position: center;
+    "
+  >
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.9);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+        width: 300px;
+        text-align: center;
+      "
+    >
+      <h2 style="margin-bottom: 20px">Signup</h2>
+      <form method="POST" action="">
+        {% csrf_token %} {{ form.as_p }}
+        <button
+          type="submit"
+          style="
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+          "
+        >
+          Sign Up
+        </button>
+      </form>
+      <p style="margin-top: 15px">
+        Already have an account? <a href="{% url 'login' %}">Login</a>
+      </p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Goals Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes drawCircle {
+            0% { stroke-dasharray: 0 314; }
+            100% { stroke-dasharray: 314 314; }
+        }
+        .progress-ring-circle {
+            animation: drawCircle 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation-delay: 0.3s;
+        }
+        .progress-ring-circle-initial {
+            stroke-dasharray: 0 314;
+        }
+    </style>
+</head>
+<body className="min-h-screen p-4 sm:p-6 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const ProgressRing = ({ progress, priority }) => {
+            const radius = 40;
+            const stroke = 8;
+            const normalizedRadius = radius - stroke * 2;
+            const circumference = normalizedRadius * 2 * Math.PI;
+            const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+            let color;
+            if (priority >= 4) color = '#EF4444';
+            else if (priority === 3) color = '#F97316';
+            else color = '#22C55E';
+
+            return (
+                <div className="relative flex items-center justify-center">
+                    <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
+                        <circle
+                            stroke="#E5E7EB"
+                            fill="transparent"
+                            strokeWidth={stroke}
+                            r={normalizedRadius}
+                            cx={radius}
+                            cy={radius}
+                        />
+                        <circle
+                            stroke={color}
+                            fill="transparent"
+                            strokeWidth={stroke}
+                            strokeDasharray={`${circumference} ${circumference}`}
+                            style={{ strokeDashoffset }}
+                            r={normalizedRadius}
+                            cx={radius}
+                            cy={radius}
+                            className={`progress-ring-circle progress-ring-circle-initial`}
+                        />
+                    </svg>
+                    <span className="absolute text-lg font-semibold text-gray-700 dark:text-gray-200">{`${Math.round(progress)}%`}</span>
+                </div>
+            );
+        };
+
+        const GoalCard = ({ goal }) => {
+            const [isExpanded, setIsExpanded] = useState(false);
+            const isUrgent = goal.priority_level >= 4;
+
+            return (
+                <div
+                    className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-all duration-300 cursor-pointer border-l-4 ${isUrgent ? 'border-red-500' : 'border-indigo-500'} hover:shadow-lg hover:scale-105 hover:border-indigo-400 dark:hover:border-indigo-300`}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                        <div className="flex-shrink-0 mb-4 sm:mb-0">
+                            <ProgressRing progress={goal.progress} priority={goal.priority_level} />
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{`${goal.name} - ${goal.goal_name}`}</h3>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsExpanded(!isExpanded);
+                                    }}
+                                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 focus:outline-none"
+                                >
+                                    {isExpanded ? 'Collapse' : 'Expand'}
+                                </button>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Saved: ${goal.saved_so_far.toFixed(2)} / Target: ${goal.target_amount.toFixed(2)}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Deadline: {goal.deadline}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Priority: <span className={`font-medium ${isUrgent ? 'text-red-600 dark:text-red-400' : 'text-indigo-600 dark:text-indigo-400'}`}>{goal.priority_level}</span>
+                            </p>
+                            {isExpanded ? (
+                                <div className="mt-3">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300">{goal.advice}</p>
+                                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        <p>Interest Rate: {(goal.int_rate * 100).toFixed(2)}%</p>
+                                        <p>FICO Score: {goal.fico}</p>
+                                        <p>Debt-to-Income Ratio: {goal.dti.toFixed(2)}</p>
+                                        <p>Revolving Utilization: {goal.revol_util.toFixed(2)}%</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 line-clamp-2">{goal.advice}</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Timeline = ({ goals }) => {
+            const startDate = new Date('2025-05-13');
+            const endDate = new Date('2028-05-11');
+            const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+            return (
+                <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Goals Timeline</h2>
+                    <div className="relative h-64 sm:h-48 overflow-x-auto">
+                        <div className="absolute w-full h-1 bg-gray-200 dark:bg-gray-600 top-12"></div>
+                        {goals.map((goal, index) => {
+                            const goalStart = startDate;
+                            const goalEnd = new Date(goal.deadline);
+                            const daysFromStart = (goalEnd - startDate) / (1000 * 60 * 60 * 24);
+                            const position = (daysFromStart / totalDays) * 100;
+                            const halfwayDate = new Date(goalStart.getTime() + (goalEnd - goalStart) / 2);
+                            const halfwayPosition = ((halfwayDate - startDate) / (1000 * 60 * 60 * 24) / totalDays) * 100;
+
+                            const currentDate = new Date('2025-05-13');
+                            const daysElapsed = (currentDate - startDate) / (1000 * 60 * 60 * 24);
+                            const expectedProgress = (daysElapsed / daysFromStart) * 100;
+                            const isFallingBehind = goal.progress < expectedProgress;
+                            const daysToDeadline = (goalEnd - currentDate) / (1000 * 60 * 60 * 24);
+                            const isCloseToDeadline = daysToDeadline <= 180;
+
+                            const labelPosition = index % 2 === 0 ? 'top-16' : 'top-4';
+
+                            return (
+                                <div key={index} className="relative mb-6">
+                                    <div
+                                        className={`absolute h-4 w-4 rounded-full top-10 ${isFallingBehind || isCloseToDeadline ? 'bg-red-500' : 'bg-indigo-500'} group cursor-pointer`}
+                                        style={{ left: `${position}%` }}
+                                    >
+                                        <div className={`absolute ${labelPosition} text-xs text-gray-600 dark:text-gray-400 transform -translate-x-1/2 rotate-45 w-32 sm:w-40 truncate group-hover:hidden`}>
+                                            {`${goal.name}: ${goal.goal_name}`}
+                                        </div>
+                                        <div className="absolute hidden group-hover:block bg-gray-800 dark:bg-gray-900 text-white dark:text-gray-200 text-xs rounded py-1 px-2 -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                                            {`${goal.name}: ${goal.goal_name} (Progress: ${Math.round(goal.progress)}%)`}
+                                        </div>
+                                    </div>
+                                    <div
+                                        className="absolute h-3 w-3 rounded-full top-10 bg-gray-400 dark:bg-gray-500"
+                                        style={{ left: `${halfwayPosition}%` }}
+                                        title="Halfway Point"
+                                    ></div>
+                                    {(isFallingBehind || isCloseToDeadline) && (
+                                        <div className={`absolute ${index % 2 === 0 ? 'top-24' : 'top-0'} text-xs text-red-600 dark:text-red-400 font-medium`} style={{ left: `${position}%`, transform: 'translateX(-50%)' }}>
+                                            {isFallingBehind ? 'Behind' : 'Urgent'}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        <div className="absolute top-10 h-4 w-4 rounded-full bg-green-500 left-0" title="Start: 2025-05-13"></div>
+                        <div className="absolute top-16 text-xs text-gray-600 dark:text-gray-400 left-0">Start</div>
+                        <div className="absolute top-10 h-4 w-4 rounded-full bg-red-500 right-0" title="End: 2028-05-11"></div>
+                        <div className="absolute top-16 text-xs text-gray-600 dark:text-gray-400 right-0">End</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Login = ({ onLogin, users }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (password !== '1234') {
+                    setError('Invalid password');
+                    return;
+                }
+                if (!users.includes(username)) {
+                    setError('Invalid username');
+                    return;
+                }
+                localStorage.setItem('loggedInUser', username);
+                onLogin(username);
+            };
+
+            return (
+                <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 text-center">Login to Your Dashboard</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                                    placeholder="Enter your username"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                                    placeholder="Enter your password"
+                                />
+                            </div>
+                            {error && <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>}
+                            <button
+                                onClick={handleLogin}
+                                className="w-full bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200"
+                            >
+                                Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const FinancialGoalsDashboard = () => {
+            const initialData = [
+                { name: "Aisha", goal_name: "credit_card", target_amount: 12345.6, saved_so_far: 3423.5, monthly_contribution: 342.1, deadline: "2028-05-11", priority_level: 3, is_locked: true, auto_allocate: true, progress: 27.7, advice: "Progress: 27.7% (Saved 3423.5 of 12345.6). Remaining: 8922.1. Months left: 36. This goal is locked (non-payment risk). Increase contribution by 10% to 376.3/month to finish faster.", int_rate: 0.12, fico: 700, dti: 15.2, revol_util: 45.0 },
+                { name: "Aisha", goal_name: "debt_consolidation", target_amount: 18000.0, saved_so_far: 7200.0, monthly_contribution: 500.0, deadline: "2028-05-11", priority_level: 4, is_locked: false, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 7200.0 of 18000.0). Remaining: 10800.0. Months left: 36. You're on track. Consider adding 10% (550.0/month) to finish earlier.", int_rate: 0.15, fico: 680, dti: 20.1, revol_util: 50.0 },
+                { name: "Aisha", goal_name: "all_other", target_amount: 9000.0, saved_so_far: 4500.0, monthly_contribution: 250.0, deadline: "2028-05-11", priority_level: 2, is_locked: false, auto_allocate: false, progress: 50.0, advice: "Progress: 50.0% (Saved 4500.0 of 9000.0). Remaining: 4500.0. Months left: 36. You're on track. Consider adding 5% (262.5/month) to finish earlier. Enable auto-allocation to ensure consistent payments.", int_rate: 0.09, fico: 720, dti: 12.5, revol_util: 30.0 },
+                { name: "Rohan", goal_name: "home_improvement", target_amount: 21600.0, saved_so_far: 5400.0, monthly_contribution: 600.0, deadline: "2028-05-11", priority_level: 5, is_locked: true, auto_allocate: true, progress: 25.0, advice: "Progress: 25.0% (Saved 5400.0 of 21600.0). Remaining: 16200.0. Months left: 36. This goal is locked (non-payment risk). Increase contribution by 20% to 720.0/month to finish faster.", int_rate: 0.18, fico: 650, dti: 25.0, revol_util: 60.0 },
+                { name: "Rohan", goal_name: "major_purchase", target_amount: 7200.0, saved_so_far: 3600.0, monthly_contribution: 200.0, deadline: "2028-05-11", priority_level: 1, is_locked: false, auto_allocate: false, progress: 50.0, advice: "Progress: 50.0% (Saved 3600.0 of 7200.0). Remaining: 3600.0. Months left: 36. You're on track. Consider adding 5% (210.0/month) to finish earlier. Enable auto-allocation to ensure consistent payments.", int_rate: 0.07, fico: 740, dti: 10.0, revol_util: 20.0 },
+                { name: "Rohan", goal_name: "small_business", target_amount: 15000.0, saved_so_far: 6000.0, monthly_contribution: 416.7, deadline: "2028-05-11", priority_level: 4, is_locked: false, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 6000.0 of 15000.0). Remaining: 9000.0. Months left: 36. You're on track. Consider adding 10% (458.4/month) to finish earlier.", int_rate: 0.14, fico: 690, dti: 18.0, revol_util: 55.0 },
+                { name: "Meena", goal_name: "educational", target_amount: 10800.0, saved_so_far: 3240.0, monthly_contribution: 300.0, deadline: "2028-05-11", priority_level: 3, is_locked: false, auto_allocate: true, progress: 30.0, advice: "Progress: 30.0% (Saved 3240.0 of 10800.0). Remaining: 7560.0. Months left: 36. You're on track. Consider adding 5% (315.0/month) to finish earlier.", int_rate: 0.11, fico: 710, dti: 14.0, revol_util: 40.0 },
+                { name: "Meena", goal_name: "credit_card", target_amount: 13500.0, saved_so_far: 5400.0, monthly_contribution: 375.0, deadline: "2028-05-11", priority_level: 3, is_locked: true, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 5400.0 of 13500.0). Remaining: 8100.0. Months left: 36. This goal is locked (non-payment risk). Increase contribution by 10% to 412.5/month to finish faster.", int_rate: 0.13, fico: 695, dti: 16.5, revol_util: 48.0 },
+                { name: "Meena", goal_name: "debt_consolidation", target_amount: 20000.0, saved_so_far: 8000.0, monthly_contribution: 555.6, deadline: "2028-05-11", priority_level: 4, is_locked: false, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 8000.0 of 20000.0). Remaining: 12000.0. Months left: 36. You're on track. Consider adding 10% (611.2/month) to finish earlier.", int_rate: 0.16, fico: 670, dti: 22.0, revol_util: 52.0 },
+                { name: "Arjun", goal_name: "all_other", target_amount: 8500.0, saved_so_far: 4250.0, monthly_contribution: 236.1, deadline: "2028-05-11", priority_level: 2, is_locked: false, auto_allocate: false, progress: 50.0, advice: "Progress: 50.0% (Saved 4250.0 of 8500.0). Remaining: 4250.0. Months left: 36. You're on track. Consider adding 5% (247.9/month) to finish earlier. Enable auto-allocation to ensure consistent payments.", int_rate: 0.08, fico: 730, dti: 11.0, revol_util: 28.0 },
+                { name: "Arjun", goal_name: "home_improvement", target_amount: 24000.0, saved_so_far: 6000.0, monthly_contribution: 666.7, deadline: "2028-05-11", priority_level: 5, is_locked: true, auto_allocate: true, progress: 25.0, advice: "Progress: 25.0% (Saved 6000.0 of 24000.0). Remaining: 18000.0. Months left: 36. This goal is locked (non-payment risk). Increase contribution by 20% to 800.0/month to finish faster.", int_rate: 0.19, fico: 640, dti: 26.0, revol_util: 65.0 },
+                { name: "Sneha", goal_name: "major_purchase", target_amount: 6000.0, saved_so_far: 3000.0, monthly_contribution: 166.7, deadline: "2028-05-11", priority_level: 1, is_locked: false, auto_allocate: false, progress: 50.0, advice: "Progress: 50.0% (Saved 3000.0 of 6000.0). Remaining: 3000.0. Months left: 36. You're on track. Consider adding 5% (175.0/month) to finish earlier. Enable auto-allocation to ensure consistent payments.", int_rate: 0.06, fico: 750, dti: 9.0, revol_util: 18.0 },
+                { name: "Sneha", goal_name: "small_business", target_amount: 16500.0, saved_so_far: 6600.0, monthly_contribution: 458.3, deadline: "2028-05-11", priority_level: 4, is_locked: false, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 6600.0 of 16500.0). Remaining: 9900.0. Months left: 36. You're on track. Consider adding 10% (504.1/month) to finish earlier.", int_rate: 0.15, fico: 685, dti: 19.0, revol_util: 58.0 },
+                { name: "Sneha", goal_name: "educational", target_amount: 12000.0, saved_so_far: 3600.0, monthly_contribution: 333.3, deadline: "2028-05-11", priority_level: 3, is_locked: false, auto_allocate: true, progress: 30.0, advice: "Progress: 30.0% (Saved 3600.0 of 12000.0). Remaining: 8400.0. Months left: 36. You're on track. Consider adding 5% (350.0/month) to finish earlier.", int_rate: 0.12, fico: 705, dti: 15.0, revol_util: 42.0 },
+                { name: "Vikram", goal_name: "credit_card", target_amount: 14000.0, saved_so_far: 5600.0, monthly_contribution: 388.9, deadline: "2028-05-11", priority_level: 3, is_locked: true, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 5600.0 of 14000.0). Remaining: 8400.0. Months left: 36. This goal is locked (non-payment risk). Increase contribution by 10% to 427.8/month to finish faster.", int_rate: 0.13, fico: 690, dti: 17.0, revol_util: 47.0 },
+                { name: "Vikram", goal_name: "debt_consolidation", target_amount: 22000.0, saved_so_far: 8800.0, monthly_contribution: 611.1, deadline: "2028-05-11", priority_level: 4, is_locked: false, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 8800.0 of 22000.0). Remaining: 13200.0. Months left: 36. You're on track. Consider adding 10% (672.2/month) to finish earlier.", int_rate: 0.17, fico: 660, dti: 23.0, revol_util: 53.0 },
+                { name: "Isha", goal_name: "all_other", target_amount: 9500.0, saved_so_far: 4750.0, monthly_contribution: 263.9, deadline: "2028-05-11", priority_level: 2, is_locked: false, auto_allocate: false, progress: 50.0, advice: "Progress: 50.0% (Saved 4750.0 of 9500.0). Remaining: 4750.0. Months left: 36. You're on track. Consider adding 5% (277.1/month) to finish earlier. Enable auto-allocation to ensure consistent payments.", int_rate: 0.08, fico: 725, dti: 13.0, revol_util: 32.0 },
+                { name: "Isha", goal_name: "home_improvement", target_amount: 26000.0, saved_so_far: 6500.0, monthly_contribution: 722.2, deadline: "2028-05-11", priority_level: 5, is_locked: true, auto_allocate: true, progress: 25.0, advice: "Progress: 25.0% (Saved 6500.0 of 26000.0). Remaining: 19500.0. Months left: 36. This goal is locked (non-payment risk). Increase contribution by 20% to 866.7/month to finish faster.", int_rate: 0.20, fico: 630, dti: 27.0, revol_util: 68.0 },
+                { name: "Isha", goal_name: "major_purchase", target_amount: 6500.0, saved_so_far: 3250.0, monthly_contribution: 180.6, deadline: "2028-05-11", priority_level: 1, is_locked: false, auto_allocate: false, progress: 50.0, advice: "Progress: 50.0% (Saved 3250.0 of 6500.0). Remaining: 3250.0. Months left: 36. You're on track. Consider adding 5% (189.6/month) to finish earlier. Enable auto-allocation to ensure consistent payments.", int_rate: 0.06, fico: 745, dti: 8.5, revol_util: 17.0 },
+                { name: "Dev", goal_name: "small_business", target_amount: 18000.0, saved_so_far: 7200.0, monthly_contribution: 500.0, deadline: "2028-05-11", priority_level: 4, is_locked: false, auto_allocate: true, progress: 40.0, advice: "Progress: 40.0% (Saved 7200.0 of 18000.0). Remaining: 10800.0. Months left: 36. You're on track. Consider adding 10% (550.0/month) to finish earlier.", int_rate: 0.16, fico: 680, dti: 20.0, revol_util: 56.0 },
+                { name: "Dev", goal_name: "educational", target_amount: 13000.0, saved_so_far: 3900.0, monthly_contribution: 361.1, deadline: "2028-05-11", priority_level: 3, is_locked: false, auto_allocate: true, progress: 30.0, advice: "Progress: 30.0% (Saved 3900.0 of 13000.0). Remaining: 9100.0. Months left: 36. You're on track. Consider adding 5% (379.2/month) to finish earlier.", int_rate: 0.11, fico: 700, dti: 14.5, revol_util: 43.0 }
+            ];
+
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [loggedInUser, setLoggedInUser] = useState(null);
+            const [theme, setTheme] = useState('light');
+            const [data, setData] = useState(initialData);
+            const [filteredData, setFilteredData] = useState([]);
+            const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+            const [filters, setFilters] = useState({
+                priority: '',
+                name: '',
+                progressMin: 0,
+                progressMax: 100,
+                deadlineMin: '2025-01-01',
+                deadlineMax: '2030-12-31',
+                search: ''
+            });
+            const [showTimeline, setShowTimeline] = useState(false);
+
+            useEffect(() => {
+                const savedUser = localStorage.getItem('loggedInUser');
+                if (savedUser) {
+                    setLoggedInUser(savedUser);
+                    setIsLoggedIn(true);
+                }
+
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(prefersDark ? 'dark' : 'light');
+            }, []);
+
+            useEffect(() => {
+                if (isLoggedIn && loggedInUser) {
+                    let userData = initialData.filter(item => item.name === loggedInUser);
+                    setData(userData);
+                    setFilteredData(userData);
+                }
+            }, [isLoggedIn, loggedInUser]);
+
+            useEffect(() => {
+                let filtered = [...data];
+                
+                if (filters.priority) {
+                    filtered = filtered.filter(item => item.priority_level === parseInt(filters.priority));
+                }
+                
+                if (filters.name) {
+                    filtered = filtered.filter(item => item.name === filters.name);
+                }
+                
+                filtered = filtered.filter(item => 
+                    item.progress >= filters.progressMin && item.progress <= filters.progressMax
+                );
+                
+                filtered = filtered.filter(item => 
+                    item.deadline >= filters.deadlineMin && item.deadline <= filters.deadlineMax
+                );
+                
+                if (filters.search) {
+                    filtered = filtered.filter(item => 
+                        item.goal_name.toLowerCase().includes(filters.search.toLowerCase()) ||
+                        item.name.toLowerCase().includes(filters.search.toLowerCase())
+                    );
+                }
+                
+                if (sortConfig.key) {
+                    filtered.sort((a, b) => {
+                        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+                        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+                }
+                
+                setFilteredData(filtered);
+            }, [filters, sortConfig, data]);
+
+            useEffect(() => {
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [theme]);
+
+            const handleLogin = (username) => {
+                setLoggedInUser(username);
+                setIsLoggedIn(true);
+            };
+
+            const handleLogout = () => {
+                localStorage.removeItem('loggedInUser');
+                setLoggedInUser(null);
+                setIsLoggedIn(false);
+                setData(initialData);
+                setFilteredData(initialData);
+            };
+
+            const handleSort = (key) => {
+                setSortConfig({
+                    key,
+                    direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc'
+                });
+            };
+
+            const handleFilterChange = (e) => {
+                const { name, value } = e.target;
+                setFilters({ ...filters, [name]: value });
+            };
+
+            const downloadCSV = () => {
+                const headers = Object.keys(filteredData[0]).join(',');
+                const rows = filteredData.map(row => 
+                    Object.values(row).map(val => `"${val}"`).join(',')
+                ).join('\n');
+                const csv = `${headers}\n${rows}`;
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'financial_goals.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const downloadJSON = () => {
+                const json = JSON.stringify(filteredData, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'financial_goals.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const downloadAdvice = () => {
+                const adviceText = filteredData.map(row => 
+                    `${row.name} - ${row.goal_name}: ${row.advice}`
+                ).join('\n\n');
+                const blob = new Blob([adviceText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'financial_advice.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const uniqueNames = [...new Set(initialData.map(item => item.name))];
+            const userNames = isLoggedIn ? [loggedInUser] : uniqueNames;
+
+            if (!isLoggedIn) {
+                return <Login onLogin={handleLogin} users={uniqueNames} />;
+            }
+
+            return (
+                <div className="container mx-auto p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center">Financial Goals Dashboard</h1>
+                        <div className="flex items-center space-x-3">
+                            <button
+                                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                                className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg shadow-md hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-200"
+                            >
+                                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-red-600 dark:bg-red-500 text-white px-3 py-1 rounded-lg shadow-md hover:bg-red-700 dark:hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority Level</label>
+                            <select 
+                                name="priority" 
+                                value={filters.priority} 
+                                onChange={handleFilterChange}
+                                className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                            >
+                                <option value="">All</option>
+                                {[1, 2, 3, 4, 5].map(p => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User Name</label>
+                            <select 
+                                name="name" 
+                                value={filters.name} 
+                                onChange={handleFilterChange}
+                                className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                            >
+                                {userNames.map(name => (
+                                    <option key={name} value={name}>{name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Progress Range (%)</label>
+                            <div className="flex space-x-2">
+                                <input 
+                                    type="number" 
+                                    name="progressMin" 
+                                    value={filters.progressMin} 
+                                    onChange={handleFilterChange}
+                                    className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                                    placeholder="Min"
+                                />
+                                <input 
+                                    type="number" 
+                                    name="progressMax" 
+                                    value={filters.progressMax} 
+                                    onChange={handleFilterChange}
+                                    className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                                    placeholder="Max"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search by Goal Name</label>
+                            <input 
+                                type="text" 
+                                name="search" 
+                                value={filters.search} 
+                                onChange={handleFilterChange}
+                                className="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-200 transition duration-200"
+                                placeholder="Search goals..."
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 mb-6">
+                        <button 
+                            onClick={downloadCSV}
+                            className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200"
+                        >
+                            Download CSV
+                        </button>
+                        <button 
+                            onClick={downloadJSON}
+                            className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200"
+                        >
+                            Download JSON
+                        </button>
+                        <button 
+                            onClick={downloadAdvice}
+                            className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200"
+                        >
+                            Export Advice
+                        </button>
+                        <button 
+                            onClick={() => setShowTimeline(!showTimeline)}
+                            className="bg-gray-600 dark:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-200"
+                        >
+                            {showTimeline ? 'Hide Timeline' : 'Show Timeline'}
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                        {filteredData.map((goal, index) => (
+                            <GoalCard key={index} goal={goal} />
+                        ))}
+                    </div>
+
+                    {showTimeline && <Timeline goals={filteredData} />}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<FinancialGoalsDashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>

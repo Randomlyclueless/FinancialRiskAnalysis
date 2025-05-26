@@ -15,12 +15,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include
 from django.views.generic import RedirectView
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Include all routes from authapp (like login, register, dashboard, etc.)
     path('', include('authapp.urls')),
-    path('', RedirectView.as_view(url='/login/', permanent=True)),
+    
+    # ML prediction route (optional, only if used in your project)
+
+    # Redirect root URL to /login/ (optional and only safe if /login/ exists in authapp)
+    path('', RedirectView.as_view(url='/login/', permanent=False)),
 ]

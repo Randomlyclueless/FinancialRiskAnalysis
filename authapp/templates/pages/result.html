@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prediction Result</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f7fc;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        width: 60%;
+        margin: 50px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: #4caf50;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      img {
+        display: block;
+        margin: 20px auto;
+        width: 80%;
+        max-width: 600px;
+      }
+
+      .back-btn {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+
+      .back-btn:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Prediction Results</h1>
+
+      <h3>User Input Data</h3>
+      <table>
+        <tr>
+          <th>Loan Amount</th>
+          <td>{{ user_data.Loan Amount.0 }}</td>
+        </tr>
+        <tr>
+          <th>Monthly Income</th>
+          <td>{{ user_data.Income.0 }}</td>
+        </tr>
+        <tr>
+          <th>Monthly Expenses</th>
+          <td>{{ user_data.Expenses.0 }}</td>
+        </tr>
+        <tr>
+          <th>Proposed EMI</th>
+          <td>{{ user_data.EMI.0 }}</td>
+        </tr>
+        <tr>
+          <th>Interest Rate</th>
+          <td>{{ user_data.Interest Rate.0 }}</td>
+        </tr>
+        <tr>
+          <th>Loan Term (Months)</th>
+          <td>{{ user_data.Loan Term.0 }}</td>
+        </tr>
+      </table>
+
+      <h3>EDA - EMI vs Loan Term</h3>
+      <img src="{% static image_url %}" alt="EMI vs Loan Term Scatter Plot" />
+
+      <a href="{% url 'home' %}" class="back-btn">Back to Home</a>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EMI Result</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(to right, #dfe9f3, #ffffff);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 700px;
+        margin: 60px auto;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+        font-size: 2em;
+        margin-bottom: 25px;
+      }
+
+      .emi-result,
+      .error-message,
+      .info-message {
+        text-align: center;
+        font-size: 1.4em;
+        margin-top: 20px;
+      }
+
+      .emi-result {
+        color: #1abc9c;
+        font-weight: bold;
+      }
+
+      .error-message {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+
+      .info-message {
+        color: #7f8c8d;
+      }
+
+      .chart-section {
+        margin-top: 40px;
+        text-align: center;
+      }
+
+      canvas {
+        max-width: 400px;
+        margin: auto;
+      }
+
+      footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 0.9em;
+        color: #7f8c8d;
+        background: transparent;
+        margin-top: auto;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Loan EMI Result</h2>
+
+      {% if emi %}
+      <p class="emi-result">Your Monthly EMI is: ₹<strong>{{ emi }}</strong></p>
+
+      <div class="chart-section">
+        <h3>Payment Breakdown</h3>
+        <canvas id="breakdownChart"></canvas>
+      </div>
+
+      <script>
+        const principal = {{ loan_amount|default:0 }};
+        const totalEMI = {{ emi|default:0 }} * {{ tenure_months|default:0 }};
+        const interest = totalEMI - principal;
+
+        const ctx = document.getElementById('breakdownChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Principal', 'Interest'],
+            datasets: [{
+              data: [principal, interest],
+              backgroundColor: ['#3498db', '#e67e22'],
+              borderColor: ['#2980b9', '#d35400'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.label}: ₹${context.parsed.toFixed(2)}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      </script>
+      {% elif error %}
+      <p class="error-message">{{ error }}</p>
+      {% else %}
+      <p class="info-message">No result yet.</p>
+      {% endif %}
+    </div>
+
+    <footer>
+      <p>© 2025 Loan EMI Calculator | Your Financial Helper</p>
+    </footer>
+  </body>
+</html>

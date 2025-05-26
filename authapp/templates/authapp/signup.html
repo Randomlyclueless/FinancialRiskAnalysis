@@ -14,30 +14,60 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-image: url('/static/authapp/image2.jpg');
-      background-size: cover;
-      background-position: center;
+      background-color: #f0f0f0;
     "
   >
     <div
       style="
-        background: rgba(255, 255, 255, 0.9);
+        background: white;
         padding: 40px;
         border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         width: 300px;
         text-align: center;
       "
     >
       <h2 style="margin-bottom: 20px">Signup</h2>
+
+      {% if messages %}
+      <div style="color: green; margin-bottom: 10px; text-align: left">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %} {% if form.errors %}
+      <div style="color: red; margin-bottom: 10px; text-align: left">
+        {% for field in form %} {% for error in field.errors %}
+        <p>{{ error }}</p>
+        {% endfor %} {% endfor %} {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
       <form method="POST" action="">
-        {% csrf_token %} {{ form.as_p }}
+        {% csrf_token %} {% for field in form %}
+        <input
+          type="{{ field.field.widget.input_type }}"
+          name="{{ field.name }}"
+          placeholder="{{ field.label }}"
+          value="{{ field.value|default_if_none:'' }}"
+          required
+          style="
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+          "
+        />
+        {% endfor %}
         <button
           type="submit"
           style="
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
@@ -46,6 +76,7 @@
           Sign Up
         </button>
       </form>
+
       <p style="margin-top: 15px">
         Already have an account? <a href="{% url 'login' %}">Login</a>
       </p>

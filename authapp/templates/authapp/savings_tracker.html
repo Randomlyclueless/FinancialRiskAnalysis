@@ -1,0 +1,330 @@
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Savings Tracker</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f2f4f7;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      .container {
+        max-width: 960px;
+      }
+
+      .page-header {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+        padding: 24px;
+        margin-bottom: 32px;
+      }
+
+      .card-header {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .form-label {
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #555;
+      }
+
+      .form-control {
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        box-shadow: none;
+        padding: 8px 12px;
+        background-color: #fafafa;
+      }
+
+      .form-control:focus {
+        border-color: #0d6efd;
+        background-color: #fff;
+      }
+
+      .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        padding: 8px 18px;
+        font-weight: 500;
+        border-radius: 6px;
+      }
+
+      .btn-primary:hover {
+        background-color: #0b5ed7;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .table thead {
+        background-color: #f9fafb;
+      }
+
+      .table th,
+      .table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #333;
+      }
+
+      .table tbody tr:hover {
+        background-color: #f1f5f9;
+      }
+
+      .no-data {
+        text-align: center;
+        color: #888;
+        padding: 20px;
+        font-style: italic;
+      }
+
+      .section-divider {
+        height: 2px;
+        background: #e0e0e0;
+        margin: 40px 0 20px 0;
+      }
+
+      .text-end {
+        text-align: end;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 20px 0;
+      }
+
+      .summary-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .summary-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <h1 class="page-header">
+        <i class="bi bi-piggy-bank"></i> Savings Tracker
+      </h1>
+
+      <!-- Summary Cards -->
+      <div class="row mb-4">
+        {% comment %}
+        <div class="col-md-4">
+          <div class="summary-card">
+            <h5><i class="bi bi-wallet2"></i> Monthly Salary</h5>
+            <div class="summary-value">₹{{ salary|default:"0" }}</div>
+          </div>
+        </div>
+        {% endcomment %}
+        <div class="col-md-4">
+          <div class="summary-card">
+            <h5><i class="bi bi-graph-up"></i> Total Invested</h5>
+            <div class="summary-value">₹{{ total_investment|default:"0" }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="summary-card">
+            <h5><i class="bi bi-percent"></i> Investment %</h5>
+            <div class="summary-value">{{ percentage|default:"0" }}%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Section -->
+      <div class="card">
+        <div class="card-header">
+          <i class="bi bi-plus-circle"></i> Add New Investment
+        </div>
+        <form method="POST">
+          {% csrf_token %}
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label class="form-label">Investment Type</label>
+              {{ form.investment_type|add_class:"form-control" }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Amount (₹)</label>
+              {{ form.amount|add_class:"form-control" }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Investment Date</label>
+              {{ form.investment_date|add_class:"form-control" }}
+            </div>
+          </div>
+          <div class="mt-4 text-end">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-circle-fill me-1"></i> Save
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Divider -->
+      <div class="section-divider"></div>
+
+      <!-- Chart Section -->
+      <div class="text-center mb-3">
+        <h4><i class="bi bi-bar-chart-line"></i> Your Investment Over Time</h4>
+      </div>
+
+      <!-- Chart Canvas -->
+      <div class="chart-container">
+        <canvas id="investmentChart"></canvas>
+      </div>
+
+      <!-- Divider -->
+      <div class="section-divider"></div>
+
+      <!-- Table Section -->
+      <div class="text-center mb-3">
+        <h4><i class="bi bi-list-ul"></i> Your Investments</h4>
+      </div>
+
+      <div class="table-responsive card p-0">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Investment Type</th>
+              <th>Amount (₹)</th>
+              <th>Investment Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for investment in investments %}
+            <tr>
+              <td>{{ investment.get_investment_type_display }}</td>
+              <td>₹{{ investment.amount }}</td>
+              <td>{{ investment.investment_date|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="no-data">
+                No investments recorded yet. Let's get started!
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chart.js Script -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const ctx = document.getElementById('investmentChart').getContext('2d');
+
+          // Check if we have data to display
+          {% if investments %}
+              const investmentChart = new Chart(ctx, {
+                  type: 'line',
+                  data: {
+                      labels: {{ dates|safe }},
+                      datasets: [{
+                          label: 'Investment Amount (₹)',
+                          data: {{ amounts|safe }},
+                          borderColor: 'rgb(75, 192, 192)',
+                          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                          borderWidth: 2,
+                          fill: true,
+                          tension: 0.4
+                      }]
+                  },
+                  options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                          tooltip: {
+                              callbacks: {
+                                  label: function(context) {
+                                      return '₹' + context.parsed.y.toLocaleString('en-IN');
+                                  }
+                              }
+                          },
+                          legend: {
+                              position: 'top',
+                          }
+                      },
+                      scales: {
+                          x: {
+                              title: {
+                                  display: true,
+                                  text: 'Investment Date'
+                              },
+                              grid: {
+                                  display: false
+                              }
+                          },
+                          y: {
+                              title: {
+                                  display: true,
+                                  text: 'Amount (₹)'
+                              },
+                              beginAtZero: true,
+                              ticks: {
+                                  callback: function(value) {
+                                      return '₹' + value.toLocaleString('en-IN');
+                                  }
+                              }
+                          }
+                      }
+                  }
+              });
+          {% else %}
+              // Display message when no data exists
+              ctx.font = '16px Arial';
+              ctx.fillStyle = '#888';
+              ctx.textAlign = 'center';
+              ctx.fillText('No investment data available. Add investments to see the chart.',
+                           ctx.canvas.width/2, ctx.canvas.height/2);
+          {% endif %}
+      });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

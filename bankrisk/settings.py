@@ -15,7 +15,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-nwbnk-h0d9_a5(8v&8)x8
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 # Allowed hosts (important for Render)
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = ['web-production-258d.up.railway.app', '127.0.0.1', 'localhost', '0.0.0.0']
+
 
 # Application definition
 INSTALLED_APPS = [

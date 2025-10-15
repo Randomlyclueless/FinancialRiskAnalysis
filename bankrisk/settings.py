@@ -15,13 +15,22 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-nwbnk-h0d9_a5(8v&8)x8
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 # Allowed hosts (important for Render)
-ALLOWED_HOSTS = ['web-production-258d.up.railway.app', '127.0.0.1', 'localhost', '0.0.0.0']
-CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-258d.up.railway.app',
-    'http://localhost:8000',
-    'http://0.0.0.0:8000',
+# settings.py
+
+ALLOWED_HOSTS = [
+    'financial-risk-analysis.vercel.app',   # Vercel app
+    'web-production-258d.up.railway.app',  # Railway app
+    '127.0.0.1',
+    'localhost',
+    '0.0.0.0'
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://financial-risk-analysis.vercel.app',
+    'https://web-production-258d.up.railway.app',
+    'http://localhost:8000',
+    'http://0.0.0.0:8000'
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -93,10 +102,12 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'authapp/static')]  # source
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')            # destination
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'authapp/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

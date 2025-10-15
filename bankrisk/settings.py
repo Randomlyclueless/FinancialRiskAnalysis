@@ -16,6 +16,11 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 # Allowed hosts (important for Render)
 ALLOWED_HOSTS = ['web-production-258d.up.railway.app', '127.0.0.1', 'localhost', '0.0.0.0']
+CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-258d.up.railway.app',
+    'http://localhost:8000',
+    'http://0.0.0.0:8000',
+]
 
 
 # Application definition

@@ -1,6 +1,6 @@
 from django.urls import path
 from authapp import views
-
+app_name = 'authapp'
 
 urlpatterns = [
     path('', views.login_view, name='login'),  # Default route to login page

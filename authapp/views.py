@@ -25,7 +25,8 @@ def login_view(request):
         if user:
             login(request, user)
             messages.success(request, 'Login successful!')
-            return redirect('home')
+            return redirect('authapp:home')
+
         messages.error(request, 'Invalid username or password')
     return render(request, 'authapp/login.html')
 

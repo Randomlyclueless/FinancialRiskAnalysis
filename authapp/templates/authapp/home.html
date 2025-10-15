@@ -5,7 +5,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Loan Prediction Form</title>
+    <title>Loan Prediction Form | RiskLens</title>
+
     <style>
       body {
         font-family: "Segoe UI", Arial, sans-serif;
@@ -84,23 +85,12 @@
       .form-row {
         display: flex;
         gap: 25px;
-        margin-bottom: 0;
       }
 
       .form-row .form-group {
         flex: 1;
       }
 
-      .form-group input {
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .form-group label {
-        font-weight: 500;
-      }
-
-      /* Input Icons */
       .input-icon {
         position: absolute;
         right: 15px;
@@ -110,7 +100,6 @@
         font-size: 18px;
       }
 
-      /* Results Section Styling */
       .results-container {
         margin-top: 50px;
         border-radius: 15px;
@@ -205,66 +194,6 @@
         border-radius: 8px;
       }
 
-      .alert p {
-        margin: 6px 0;
-      }
-
-      .debug-section {
-        margin-top: 35px;
-        padding: 20px;
-        background-color: #fefce8;
-        border-radius: 8px;
-        border: 1px dashed #facc15;
-      }
-
-      .debug-section h3 {
-        margin-top: 0;
-        color: #f57c00;
-      }
-
-      .debug-section pre {
-        overflow-x: auto;
-        background-color: #fff;
-        padding: 12px;
-        border-radius: 6px;
-        font-family: monospace;
-        font-size: 14px;
-      }
-
-      /* New UI Enhancements */
-      .header-icon {
-        font-size: 24px;
-      }
-
-      .tooltip {
-        position: relative;
-        display: inline-block;
-        cursor: pointer;
-      }
-
-      .tooltip .tooltiptext {
-        visibility: hidden;
-        width: 200px;
-        background-color: #555;
-        color: #fff;
-        text-align: center;
-        border-radius: 6px;
-        padding: 8px;
-        position: absolute;
-        z-index: 1;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -100px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        font-size: 14px;
-      }
-
-      .tooltip:hover .tooltiptext {
-        visibility: visible;
-        opacity: 1;
-      }
-
       .footer {
         text-align: center;
         margin-top: 40px;
@@ -272,7 +201,6 @@
         font-size: 14px;
       }
 
-      /* Button Group for EMI and Savings */
       .button-group {
         display: flex;
         gap: 20px;
@@ -292,209 +220,125 @@
       }
     </style>
   </head>
+
   <body>
     <div class="container">
-      <h1>RiskLens-Risk Analysis in Banking</h1>
+      <h1>💼 RiskLens — Banking Loan Risk Analysis</h1>
 
       <form method="POST" novalidate>
         {% csrf_token %}
 
-        <!-- Form Row 1 -->
+        <!-- FORM FIELDS -->
         <div class="form-row">
-          <!-- Loan Amount -->
           <div class="form-group">
-            <label for="{{ form.loan_amount.id_for_label }}">
-              Loan Amount (₹):
-              <span class="tooltip" style="margin-left: 45px">
-                <span class="input-icon" style="margin-left: 20px">ℹ️</span>
-                <span class="tooltiptext">
-                  Enter the total loan amount you wish to borrow.
-                </span>
-              </span>
-            </label>
-
-            {{ form.loan_amount }} {% if form.loan_amount.errors %}
-            <div class="alert">{{ form.loan_amount.errors }}</div>
+            <label for="{{ form.loan_amount.id_for_label }}">Loan Amount (₹):</label>
+            {{ form.loan_amount }}
+            {% if form.loan_amount.errors %}
+              <div class="alert">{{ form.loan_amount.errors }}</div>
             {% endif %}
           </div>
 
-          <!-- Income -->
           <div class="form-group">
-            <label for="{{ form.income.id_for_label }}">
-              Monthly Income (₹):
-              <span class="tooltip" style="margin-left: 50px">
-                <span class="input-icon">ℹ️</span>
-                <span class="tooltiptext"
-                  >Enter your total monthly income after taxes.</span
-                >
-              </span>
-            </label>
-            {{ form.income }} {% if form.income.errors %}
-            <div class="alert">{{ form.income.errors }}</div>
+            <label for="{{ form.income.id_for_label }}">Monthly Income (₹):</label>
+            {{ form.income }}
+            {% if form.income.errors %}
+              <div class="alert">{{ form.income.errors }}</div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Form Row 2 -->
         <div class="form-row">
-          <!-- Expenses -->
           <div class="form-group">
-            <label for="{{ form.expenses.id_for_label }}">
-              Monthly Expenses (₹):
-              <span class="tooltip" style="margin-left: 45px">
-                <span class="input-icon">ℹ️</span>
-                <span class="tooltiptext"
-                  >Enter your total monthly expenses, excluding loan
-                  payments.</span
-                >
-              </span>
-            </label>
-            {{ form.expenses }} {% if form.expenses.errors %}
-            <div class="alert">{{ form.expenses.errors }}</div>
+            <label for="{{ form.expenses.id_for_label }}">Monthly Expenses (₹):</label>
+            {{ form.expenses }}
+            {% if form.expenses.errors %}
+              <div class="alert">{{ form.expenses.errors }}</div>
             {% endif %}
           </div>
 
-          <!-- EMI -->
           <div class="form-group">
-            <label for="{{ form.emi.id_for_label }}">
-              EMI - Proposed (₹):
-              <span class="tooltip" style="margin-left: 45px">
-                <span class="input-icon">ℹ️</span>
-                <span class="tooltiptext"
-                  >Enter the proposed monthly loan installment amount.</span
-                >
-              </span>
-            </label>
-            {{ form.emi }} {% if form.emi.errors %}
-            <div class="alert">{{ form.emi.errors }}</div>
+            <label for="{{ form.emi.id_for_label }}">EMI - Proposed (₹):</label>
+            {{ form.emi }}
+            {% if form.emi.errors %}
+              <div class="alert">{{ form.emi.errors }}</div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Form Row 3 -->
         <div class="form-row">
-          <!-- Interest Rate -->
           <div class="form-group">
-            <label for="{{ form.interest_rate.id_for_label }}">
-              Interest Rate (Annual %):
-              <span class="tooltip" style="margin-left: 45px">
-                <span class="input-icon">ℹ️</span>
-                <span class="tooltiptext"
-                  >Enter the annual interest rate for the loan.</span
-                >
-              </span>
-            </label>
-            {{ form.interest_rate }} {% if form.interest_rate.errors %}
-            <div class="alert">{{ form.interest_rate.errors }}</div>
+            <label for="{{ form.interest_rate.id_for_label }}">Interest Rate (Annual %):</label>
+            {{ form.interest_rate }}
+            {% if form.interest_rate.errors %}
+              <div class="alert">{{ form.interest_rate.errors }}</div>
             {% endif %}
           </div>
 
-          <!-- Loan Term -->
           <div class="form-group">
-            <label for="{{ form.loan_term.id_for_label }}">
-              Loan Term (Months):
-              <span class="tooltip" style="margin-left: 45px">
-                <span class="input-icon">ℹ️</span>
-                <span class="tooltiptext"
-                  >Enter the loan duration in months.</span
-                >
-              </span>
-            </label>
-            {{ form.loan_term }} {% if form.loan_term.errors %}
-            <div class="alert">{{ form.loan_term.errors }}</div>
+            <label for="{{ form.loan_term.id_for_label }}">Loan Term (Months):</label>
+            {{ form.loan_term }}
+            {% if form.loan_term.errors %}
+              <div class="alert">{{ form.loan_term.errors }}</div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Employment Length -->
         <div class="form-group">
-          <label for="{{ form.emp_length.id_for_label }}">
-            Employment Length (Years):
-            <span class="tooltip" style="margin-left: 45px">
-              <span class="input-icon">ℹ️</span>
-              <span class="tooltiptext"
-                >Enter the number of years you have been employed.</span
-              >
-            </span>
-          </label>
-          {{ form.emp_length }} {% if form.emp_length.errors %}
-          <div class="alert">{{ form.emp_length.errors }}</div>
+          <label for="{{ form.emp_length.id_for_label }}">Employment Length (Years):</label>
+          {{ form.emp_length }}
+          {% if form.emp_length.errors %}
+            <div class="alert">{{ form.emp_length.errors }}</div>
           {% endif %}
         </div>
 
-        <!-- Submit -->
-        <div class="form-group">
-          <input type="submit" value="Predict Loan Impact" />
-        </div>
+        <input type="submit" value="Predict Loan Impact" />
       </form>
 
+      <!-- RESULTS -->
       {% if loan_term or loan_eligibility %}
       <div class="results-container">
-        <div class="results-header">
-          <span class="header-icon">📊</span>
-          Loan Prediction Results
-        </div>
+        <div class="results-header">📊 Loan Prediction Results</div>
         <div class="results-body">
           {% if loan_term %}
           <div class="result-card success">
             <h3>Recommended Loan Term</h3>
-            <p>
-              Based on your financial profile, we recommend a loan term of
-              <strong>{{ loan_term.loan_term }} months</strong>.
-            </p>
-            <p>
-              This term balances affordable monthly payments with reasonable
-              total interest costs.
-            </p>
+            <p>We recommend a loan term of <strong>{{ loan_term.loan_term }} months</strong>.</p>
           </div>
-          {% endif %} {% if loan_eligibility %}
-          <div
-            class="result-card {% if loan_eligibility.eligible %}success{% else %}error{% endif %}"
-          >
+          {% endif %}
+
+          {% if loan_eligibility %}
+          <div class="result-card {% if loan_eligibility.eligible %}success{% else %}error{% endif %}">
             <h3>Loan Eligibility</h3>
+
             {% if loan_eligibility.eligible %}
-            <span class="badge badge-success">Eligible</span>
-            <p>
-              Your debt-to-income ratio is
-              <strong>{{ loan_eligibility.dti }}%</strong>, which is within
-              acceptable limits.
-            </p>
-            <p>{{ loan_eligibility.message }}</p>
+              <span class="badge badge-success">Eligible</span>
+              <p>Your DTI: <strong>{{ loan_eligibility.dti }}%</strong></p>
+              <p>{{ loan_eligibility.message }}</p>
             {% else %}
-            <span class="badge badge-error">Not Eligible</span>
-            <p>
-              Your debt-to-income ratio is
-              <strong>{{ loan_eligibility.dti }}%</strong>, which exceeds our
-              threshold.
-            </p>
-            <p>{{ loan_eligibility.message }}</p>
+              <span class="badge badge-error">Not Eligible</span>
+              <p>Your DTI: <strong>{{ loan_eligibility.dti }}%</strong></p>
+              <p>{{ loan_eligibility.message }}</p>
             {% endif %}
+
             <div class="button-group">
-              <button onclick="window.location.href='{% url 'emi_form' %}'">
-                Calculate EMI
-              </button>
-              <button
-                class="secondary"
-                onclick="window.location.href='{% url 'savings_tracker' %}'"
-              >
-                Track Savings
-              </button>
+              <button onclick="window.location.href='{% url 'authapp:emi_form' %}'">Calculate EMI</button>
+              <button class="secondary" onclick="window.location.href='{% url 'authapp:savings_tracker' %}'">Track Savings</button>
             </div>
           </div>
           {% endif %}
         </div>
       </div>
-      {% endif %} {% if messages %}
+      {% endif %}
+
+      {% if messages %}
       <div class="alert">
         {% for message in messages %}
-        <p>{{ message }}</p>
+          <p>{{ message }}</p>
         {% endfor %}
       </div>
       {% endif %}
 
-      <div class="footer">
-        © 2025 Loan Impact Predictor. All rights reserved.
-      </div>
+      <div class="footer">© 2025 RiskLens. All Rights Reserved.</div>
     </div>
   </body>
 </html>

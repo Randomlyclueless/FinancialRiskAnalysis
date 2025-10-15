@@ -18,6 +18,7 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 # settings.py
 
 ALLOWED_HOSTS = [
+    'financialriskanalysis.onrender.com',  # Render app
     'financial-risk-analysis.vercel.app',   # Vercel app
     'web-production-258d.up.railway.app',  # Railway app
     '127.0.0.1',
